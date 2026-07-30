@@ -30,9 +30,17 @@ const createTransporter = async () => {
 /**
  * Send branded HTML reminder email to registered student
  */
-const sendReminderEmail = async ({ toEmail, studentName, reminderTitle, subjectName, dueDate, priority, reminderType }) => {
+ sendReminderEmail = async ({ toEmail, studentName, reminderTitle, subjectName, dueDate, priority, reminderType }) => {
   try {
     const transporter = await createTransporter();
+    
+try {
+  await transporter.verify();
+  console.log("✅ SMTP Connected Successfully");
+} catch (err) {
+  console.error("[Email Service] Full Error:", err);
+  throw err;
+}
 
     // Format date specifically in Asia/Kolkata IST timezone matching user local selection
     const formattedDate = new Date(dueDate).toLocaleString('en-US', {
@@ -89,8 +97,8 @@ const sendReminderEmail = async ({ toEmail, studentName, reminderTitle, subjectN
                 <span class="priority-badge">${priority || 'Normal'} Priority</span>
                 <span style="font-size: 12px; color: #64748b; margin-left: 8px;">Type: ${reminderType || 'Deadline'}</span>
               </div>
-              <div className="detail-row"><strong>Course / Subject:</strong> ${subjectName || 'General Academic'}</div>
-              <div className="detail-row"><strong>Due Date & Time:</strong> ${formattedDate} (IST)</div>
+              <div class="detail-row"><strong>Course / Subject:</strong> ${subjectName || 'General Academic'}</div>
+              <div class="detail-row"><strong>Due Date & Time:</strong> ${formattedDate} (IST)</div>
             </div>
 
             <div class="motivation">
@@ -120,7 +128,7 @@ const sendReminderEmail = async ({ toEmail, studentName, reminderTitle, subjectN
 
     return { success: true, messageId: info.messageId };
   } catch (err) {
-    console.error(`[Email Service] Error sending email to ${toEmail}:`, err.message);
+    console.error(`[Email Service]  Full Error:", err);
     throw err;
   }
 };
