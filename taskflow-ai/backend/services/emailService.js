@@ -123,7 +123,7 @@ try {
 
     console.log(`[Email Service] Notification sent to ${toEmail}. Message ID: ${info.messageId}`);
     if (nodemailer.getTestMessageUrl(info)) {
-      console.log('[Email Service] Test Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+      console.log(`[Email Service] Test Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
 
     return { success: true, messageId: info.messageId };
