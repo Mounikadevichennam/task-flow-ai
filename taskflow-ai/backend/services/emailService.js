@@ -16,15 +16,15 @@ const createTransporter = async () => {
 
   // Fallback to Ethereal Test Account if credentials are not specified in environment
   const testAccount = await nodemailer.createTestAccount();
-  return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass
-    }
-  });
+ return nodemailer.createTransport({
+  host: 'smtp.ethereal.email',
+  port: 587,
+  secure: false,
+  auth: {
+    user: testAccount.user,
+    pass: testAccount.pass
+  }
+});
 };
 
 /**
@@ -128,7 +128,7 @@ try {
 
     return { success: true, messageId: info.messageId };
   } catch (err) {
-    console.error("[Email Service]  Full Error:", err);
+    console.error(`[Email Service]  Full Error:`, err);
     throw err;
   }
 };
