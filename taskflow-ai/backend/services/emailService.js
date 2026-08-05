@@ -1,36 +1,44 @@
-const nodemailer = require('nodemailer');
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
-// Helper to create Nodemailer transporter
-const createTransporter = async () => {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
+// Helper to send emails using Brevo HTTP API
+const sendWithBrevo = async ({ toEmail, subject, htmlContent }) => {
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+      "content-type": "application/json",
+      "api-key": BREVO_API_KEY
     },
-    connectionTimeout: 30000,
-    greetingTimeout: 30000,
-    socketTimeout: 30000
+    body: JSON.stringify({
+      sender: {
+        name: "TaskFlow AI",
+        email: process.env.EMAIL_FROM
+      },
+      to: [
+        {
+          email: toEmail
+        }
+      ],
+      subject,
+      htmlContent
+    })
   });
+
+ const data = await response.json().catch(() => ({}));;
+
+  if (!response.ok) {
+    throw new Error(data.message || "Brevo email sending failed");
+  }
+
+  return data;
 };
 
 /**
  * Send branded HTML reminder email to registered student
  */
- sendReminderEmail = async ({ toEmail, studentName, reminderTitle, subjectName, dueDate, priority, reminderType }) => {
+  const sendReminderEmail = async ({ toEmail, studentName, reminderTitle, subjectName, dueDate, priority, reminderType }) => {
   try {
-    const transporter = await createTransporter();
-    
-try {
-  await transporter.verify();
-  console.log("✅ SMTP Connected Successfully");
-} catch (err) {
-  console.error("[Email Service] Full Error:", err);
-  throw err;
-}
-
+   
     // Format date specifically in Asia/Kolkata IST timezone matching user local selection
     const formattedDate = new Date(dueDate).toLocaleString('en-US', {
       timeZone: 'Asia/Kolkata',
@@ -103,19 +111,21 @@ try {
       </html>
     `;
 
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"TaskFlow AI Alerts" <alerts@taskflow.ai>',
-      to: toEmail,
-      subject: `⏰ TaskFlow AI Reminder: ${reminderTitle} (${subjectName || 'Coursework'})`,
-      html: htmlContent
-    });
+   const result = await sendWithBrevo({
+  toEmail,
+  subject: `⏰ TaskFlow AI Reminder: ${reminderTitle} (${subjectName || "Coursework"})`,
+  htmlContent
+});
 
-    console.log(`[Email Service] Notification sent to ${toEmail}. Message ID: ${info.messageId}`);
-    if (nodemailer.getTestMessageUrl(info)) {
-      console.log(`[Email Service] Test Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
+console.log(`[Email Service] Notification sent to ${toEmail}`);
 
-    return { success: true, messageId: info.messageId };
+return {
+    success: true,
+    messageId:
+        result.messageId ||
+        result.messageIds?.[0] ||
+        null
+};
   } catch (err) {
     console.error(`[Email Service]  Full Error:`, err);
     throw err;
