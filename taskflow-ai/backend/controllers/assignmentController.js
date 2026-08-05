@@ -111,6 +111,8 @@ const createAssignment = async (req, res) => {
     }
 
     const parsedDeadline = parseISTDate(deadline);
+    console.log("Received deadline:", deadline);
+    console.log("Parsed deadline:", parsedDeadline);
 
     const assignment = await Assignment.create({
       user: req.user._id,
@@ -126,22 +128,22 @@ const createAssignment = async (req, res) => {
       completedAt: status === 'Completed' ? new Date() : null
     });
 
-    
-    // Create Google Calendar Event
-try {
-  await createCalendarEvent(
-    process.env.GOOGLE_REFRESH_TOKEN,
-    {
-      title: assignment.title,
-      description: assignment.description,
-      dateTime: assignment.deadline
-    }
-  );
 
-  console.log("[Google Calendar] Assignment event created successfully");
-} catch (error) {
-  console.error("[Google Calendar]", error.message);
-}
+    // Create Google Calendar Event
+    try {
+      await createCalendarEvent(
+        process.env.GOOGLE_REFRESH_TOKEN,
+        {
+          title: assignment.title,
+          description: assignment.description,
+          dateTime: assignment.deadline
+        }
+      );
+
+      console.log("[Google Calendar] Assignment event created successfully");
+    } catch (error) {
+      console.error("[Google Calendar]", error.message);
+    }
     await Reminder.create({
       user: req.user._id,
       assignment: assignment._id,
