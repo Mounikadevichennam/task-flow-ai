@@ -23,7 +23,7 @@ const getToken = async (code) => {
 
 const createCalendarEvent = async (
   refreshToken,
-  assignment
+  eventData
 ) => {
   oauth2Client.setCredentials({
     refresh_token: refreshToken
@@ -34,20 +34,22 @@ const createCalendarEvent = async (
     auth: oauth2Client
   });
 
-  const event = {
-    summary: assignment.title,
-    description: assignment.description || "",
-    start: {
-      dateTime: new Date(assignment.deadline).toISOString(),
-      timeZone: "Asia/Kolkata"
-    },
-    end: {
-      dateTime: new Date(
-        new Date(assignment.deadline).getTime() + 60 * 60 * 1000
-      ).toISOString(),
-      timeZone: "Asia/Kolkata"
-    }
-  };
+  const startTime = new Date(eventData.dateTime);
+
+const event = {
+  summary: eventData.title,
+  description: eventData.description || "",
+  start: {
+    dateTime: startTime.toISOString(),
+    timeZone: "Asia/Kolkata"
+  },
+  end: {
+    dateTime: new Date(
+      startTime.getTime() + 60 * 60 * 1000
+    ).toISOString(),
+    timeZone: "Asia/Kolkata"
+  }
+};
 
   return await calendar.events.insert({
     calendarId: "primary",

@@ -1,3 +1,4 @@
+const { createCalendarEvent } = require("../services/googleCalendarService");
 const Assignment = require('../models/Assignment');
 const Reminder = require('../models/Reminder');
 const ActivityLog = require('../models/ActivityLog');
@@ -125,7 +126,22 @@ const createAssignment = async (req, res) => {
       completedAt: status === 'Completed' ? new Date() : null
     });
 
-    // Create automatic Reminder for the deadline
+    
+    // Create Google Calendar Event
+try {
+  await createCalendarEvent(
+    process.env.GOOGLE_REFRESH_TOKEN,
+    {
+      title: assignment.title,
+      description: assignment.description,
+      dateTime: assignment.deadline
+    }
+  );
+
+  console.log("[Google Calendar] Assignment event created successfully");
+} catch (error) {
+  console.error("[Google Calendar]", error.message);
+}
     await Reminder.create({
       user: req.user._id,
       assignment: assignment._id,
@@ -141,7 +157,6 @@ const createAssignment = async (req, res) => {
       details: `Added "${title}" for ${subject} due on ${parsedDeadline.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}`,
       type: 'assignment'
     });
-
     res.status(201).json({ success: true, data: assignment });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
