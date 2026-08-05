@@ -1,3 +1,4 @@
+const googleRoutes = require("./routes/googleRoutes");
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -30,6 +31,7 @@ app.use('/api/assignments', require('./routes/assignmentRoutes'));
 app.use('/api/reminders', require('./routes/reminderRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
+app.use("/api/google", googleRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
