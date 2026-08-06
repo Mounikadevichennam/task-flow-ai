@@ -80,11 +80,29 @@ const createReminder = async (req, res) => {
       reminderType: reminderType || 'Custom',
       assignment: assignmentId || null
     });
+    console.log("Reminder Object:", reminder);
+    // Create Google Calendar Event
+    try {
+      await createCalendarEvent(
+        process.env.GOOGLE_REFRESH_TOKEN,
+        {
+          title: `Reminder: ${reminder.title}`,
+          description: `Reminder Type: ${reminder.reminderType}`,
+          dateTime: reminder.dueDate
+        }
+      );
+
+      console.log("[Google Calendar] Reminder event created successfully");
+    } catch (error) {
+  console.error("[Reminder Calendar Error]", error);
+
+    }
 
     res.status(201).json({ success: true, data: reminder });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
-  }
+  
+}
 };
 
 // @desc    Toggle reminder completion
